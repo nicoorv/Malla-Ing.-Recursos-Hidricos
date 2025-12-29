@@ -278,23 +278,6 @@ function render(){
   }
 }
 
-
-        d.onclick=()=>{
-          if(d.classList.contains("bloqueado"))return;
-          if(modoPlan) plan[c.id]=!plan[c.id];
-          else estado[c.id]=!estado[c.id];
-          guardar();
-        };
-        sem.appendChild(d);
-      });
-
-      anio.appendChild(sem);
-    });
-
-    cont.appendChild(anio);
-  }
-}
-
 document.getElementById("modoPlan").onchange=e=>{
   modoPlan=e.target.checked;
   plan={};
