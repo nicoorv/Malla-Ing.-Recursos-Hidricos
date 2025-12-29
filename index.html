@@ -16,6 +16,7 @@
   --accent:#5a86ad;
 }
 
+/* modo oscuro */
 body.dark{
   --bg:#0f1720;
   --card:#18222d;
@@ -37,7 +38,7 @@ body{
 h1{text-align:center;margin-bottom:10px}
 
 .panel{
-  max-width:1400px;
+  max-width:1200px;
   margin:0 auto 20px;
   background:var(--card);
   padding:15px;
@@ -76,20 +77,24 @@ button{
 
 .malla{
   display:grid;
-  grid-template-columns:repeat(10,1fr);
+  grid-template-columns: repeat(10,1fr);
   gap:16px;
 }
 
 .anio{
+  background:var(--card);
+  border-radius:14px;
+  padding:10px;
+}
+
+.anio h2{
   text-align:center;
-  font-weight:bold;
+  font-size:15px;
   color:var(--accent);
 }
 
 .sem{
-  background:var(--card);
-  border-radius:12px;
-  padding:8px;
+  margin-top:8px;
 }
 
 .sem h3{
@@ -100,7 +105,6 @@ button{
   color:white;
   border-radius:8px;
   padding:4px;
-  margin-bottom:6px;
 }
 
 .curso{
@@ -113,9 +117,21 @@ button{
   position:relative;
 }
 
-.aprobado{background:var(--aprobado);text-decoration:line-through}
-.plan{background:var(--plan);outline:2px dashed var(--accent)}
-.bloqueado{background:var(--bloqueado);color:#7a8a9a;cursor:not-allowed}
+.aprobado{
+  background:var(--aprobado);
+  text-decoration:line-through;
+}
+
+.plan{
+  background:var(--plan);
+  outline:2px dashed var(--accent);
+}
+
+.bloqueado{
+  background:var(--bloqueado);
+  color:#7a8a9a;
+  cursor:not-allowed;
+}
 
 .bloqueado:hover::after{
   content:attr(data-tooltip);
@@ -158,20 +174,19 @@ button{
 
 <div class="malla" id="malla"></div>
 
+
 <script>
 const TOTAL=300;
 
 const cursos=[
-{id:"calculo1",n:"Cálculo I",c:6,s:1,r:[]},
-{id:"calculo2",n:"Cálculo II",c:6,s:2,r:["calculo1"]},
-{id:"calculo3",n:"Cálculo III",c:6,s:3,r:["calculo2"]},
-{id:"mf",n:"Mecánica de Fluidos",c:6,s:4,r:["calculo3"]},
-{id:"hidro_sup",n:"Hidrología Superficial",c:6,s:5,r:["mf"]},
-{id:"finanzas",n:"Finanzas y Administración",c:5,s:6,r:[]},
-{id:"hidro_sub",n:"Hidrología Subterránea",c:6,s:7,r:["hidro_sup"]},
-{id:"eval_proj",n:"Evaluación de Proyectos",c:4,s:8,r:["finanzas"]},
-{id:"taller",n:"Taller de Memoria",c:6,s:9,r:["practica4"]},
-{id:"memoria",n:"Memoria de Título",c:30,s:10,r:["taller"]}
+{id:"calculo1",n:"Cálculo I",c:6,a:1,s:1,r:[]},
+{id:"calculo2",n:"Cálculo II",c:6,a:1,s:2,r:["calculo1"]},
+{id:"calculo3",n:"Cálculo III",c:6,a:2,s:1,r:["calculo2"]},
+{id:"mf",n:"Mecánica de Fluidos",c:6,a:2,s:2,r:["calculo3"]},
+{id:"hidro_sup",n:"Hidrología Superficial",c:6,a:3,s:1,r:["mf"]},
+{id:"hidro_sub",n:"Hidrología Subterránea",c:6,a:4,s:1,r:["hidro_sup"]},
+{id:"taller",n:"Taller de Memoria",c:6,a:5,s:1,r:["practica4"]},
+{id:"memoria",n:"Memoria de Título",c:30,a:5,s:2,r:["taller"]}
 ];
 
 let estado=JSON.parse(localStorage.getItem("estado"))||{};
@@ -195,8 +210,8 @@ function guardar(){
   render();
 }
 
-function marcarSemestre(s){
-  cursos.filter(c=>c.s===s).forEach(c=>{
+function marcarSemestre(a,s){
+  cursos.filter(c=>c.a===a&&c.s===s).forEach(c=>{
     if(modoPlan) plan[c.id]=true;
     else estado[c.id]=true;
   });
@@ -209,49 +224,74 @@ function render(){
   document.getElementById("prog").style.width =
     (creditos()/TOTAL*100)+"%";
 
-  const cont=document.getElementById("malla");
-  cont.innerHTML="";
+  const cont = document.getElementById("malla");
+  cont.innerHTML = "";
 
-  // encabezado años
+  // fila superior: años (cada uno ocupa 2 columnas)
   for(let a=1;a<=5;a++){
-    const h=document.createElement("div");
-    h.className="anio";
-    h.style.gridColumn=`${(a-1)*2+1} / span 2`;
-    h.textContent=`Año ${a}`;
-    cont.appendChild(h);
+    const header = document.createElement("div");
+    header.style.gridColumn = `${(a-1)*2+1} / span 2`;
+    header.style.textAlign = "center";
+    header.style.fontWeight = "bold";
+    header.style.color = "var(--accent)";
+    header.textContent = `Año ${a}`;
+    cont.appendChild(header);
   }
 
-  // columnas semestres
+  // semestres
   for(let s=1;s<=10;s++){
-    const col=document.createElement("div");
-    col.className="sem";
-    col.innerHTML=`<h3 onclick="marcarSemestre(${s})">Semestre ${s}</h3>`;
+    const col = document.createElement("div");
+    col.className = "sem";
 
-    cursos.filter(c=>c.s===s).forEach(c=>{
-      const d=document.createElement("div");
-      d.className="curso";
-      d.textContent=c.n;
+    col.innerHTML = `<h3 onclick="marcarSemestre(${Math.ceil(s/2)},${s%2===0?2:1})">
+      Semestre ${s}
+    </h3>`;
+
+    cursos.filter(c => c.s === s).forEach(c=>{
+      const d = document.createElement("div");
+      d.className = "curso";
+      d.textContent = c.n;
 
       let faltan=[];
-      c.r.forEach(r=>{if(!estado[r]&&!plan[r])faltan.push(r);});
+      c.r.forEach(r=>{
+        if(!estado[r] && !plan[r]) faltan.push(r);
+      });
 
       if(estado[c.id]) d.classList.add("aprobado");
-      else if(modoPlan&&plan[c.id]) d.classList.add("plan");
+      else if(modoPlan && plan[c.id]) d.classList.add("plan");
       else if(faltan.length){
         d.classList.add("bloqueado");
-        d.dataset.tooltip="Falta aprobar:\n- "+faltan.join("\n- ");
+        d.dataset.tooltip = "Falta aprobar:\n- " + faltan.join("\n- ");
       }
 
-      d.onclick=()=>{
-        if(d.classList.contains("bloqueado"))return;
-        if(modoPlan) plan[c.id]=!plan[c.id];
-        else estado[c.id]=!estado[c.id];
+      d.onclick = ()=>{
+        if(d.classList.contains("bloqueado")) return;
+        if(modoPlan) plan[c.id] = !plan[c.id];
+        else estado[c.id] = !estado[c.id];
         guardar();
       };
+
       col.appendChild(d);
     });
 
     cont.appendChild(col);
+  }
+}
+
+
+        d.onclick=()=>{
+          if(d.classList.contains("bloqueado"))return;
+          if(modoPlan) plan[c.id]=!plan[c.id];
+          else estado[c.id]=!estado[c.id];
+          guardar();
+        };
+        sem.appendChild(d);
+      });
+
+      anio.appendChild(sem);
+    });
+
+    cont.appendChild(anio);
   }
 }
 
