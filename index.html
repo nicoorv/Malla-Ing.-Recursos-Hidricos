@@ -3,188 +3,304 @@
 <head>
 <meta charset="UTF-8">
 <title>Malla Ingeniería en Recursos Hídricos</title>
+
 <style>
-body {
-  font-family: "Segoe UI", sans-serif;
-  background: #f4f7f8;
-  margin: 0;
-  padding: 20px;
+:root{
+  --bg:#eef3f8;
+  --card:#ffffff;
+  --curso:#dbe7f2;
+  --aprobado:#b6d7f2;
+  --plan:#c7d8ea;
+  --bloqueado:#e4e9ef;
+  --texto:#1e2a36;
+  --accent:#5a86ad;
 }
 
-h1 {
-  text-align: center;
+/* modo oscuro */
+body.dark{
+  --bg:#0f1720;
+  --card:#18222d;
+  --curso:#223040;
+  --aprobado:#2f5f8a;
+  --plan:#355d82;
+  --bloqueado:#2a3440;
+  --texto:#e6edf3;
+  --accent:#7aa7d8;
 }
 
-.malla {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 10px;
+body{
+  font-family:"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--texto);
+  padding:20px;
 }
 
-.semestre {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+h1{text-align:center;margin-bottom:10px}
+
+.panel{
+  max-width:1200px;
+  margin:0 auto 20px;
+  background:var(--card);
+  padding:15px;
+  border-radius:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
 }
 
-.semestre h2 {
-  font-size: 14px;
-  text-align: center;
-  margin-bottom: 8px;
+.barra{
+  height:14px;
+  background:#cdd8e3;
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:10px;
+}
+.barra div{
+  height:100%;
+  background:var(--accent);
+  transition:width .3s;
 }
 
-.curso {
-  background: #dfeff1;
-  border-radius: 8px;
-  padding: 6px;
-  margin-bottom: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  position: relative;
+.controles{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:space-between;
 }
 
-.curso.aprobado {
-  background: #b7e4c7;
-  text-decoration: line-through;
+button{
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  background:var(--accent);
+  color:white;
+  cursor:pointer;
 }
 
-.curso.bloqueado {
-  background: #e0e0e0;
-  color: #777;
-  cursor: not-allowed;
+.malla{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:16px;
 }
 
-.curso.bloqueado:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  background: #333;
-  color: #fff;
-  font-size: 11px;
-  padding: 5px;
-  border-radius: 6px;
-  top: 100%;
-  left: 0;
-  white-space: pre-line;
-  z-index: 10;
+.anio{
+  background:var(--card);
+  border-radius:14px;
+  padding:10px;
+}
+
+.anio h2{
+  text-align:center;
+  font-size:15px;
+  color:var(--accent);
+}
+
+.sem{
+  margin-top:8px;
+}
+
+.sem h3{
+  font-size:13px;
+  text-align:center;
+  cursor:pointer;
+  background:var(--accent);
+  color:white;
+  border-radius:8px;
+  padding:4px;
+}
+
+.curso{
+  background:var(--curso);
+  border-radius:10px;
+  padding:6px;
+  font-size:12px;
+  margin-top:6px;
+  cursor:pointer;
+  position:relative;
+}
+
+.aprobado{
+  background:var(--aprobado);
+  text-decoration:line-through;
+}
+
+.plan{
+  background:var(--plan);
+  outline:2px dashed var(--accent);
+}
+
+.bloqueado{
+  background:var(--bloqueado);
+  color:#7a8a9a;
+  cursor:not-allowed;
+}
+
+.bloqueado:hover::after{
+  content:attr(data-tooltip);
+  position:absolute;
+  background:#111;
+  color:white;
+  padding:6px;
+  font-size:11px;
+  border-radius:8px;
+  top:100%;left:0;
+  white-space:pre-line;
+  z-index:10;
 }
 </style>
 </head>
+
 <body>
 
-<h1>Malla Curricular – Ingeniería en Recursos Hídricos</h1>
+<h1>Malla Ingeniería en Recursos Hídricos</h1>
+
+<div class="panel">
+  <div id="creditos"></div>
+  <div class="barra"><div id="prog"></div></div>
+
+  <div class="controles">
+    <label><input type="checkbox" id="modoPlan"> Modo planificación</label>
+    <label><input type="checkbox" id="modoOscuro"> Modo oscuro</label>
+    <button onclick="exportar()">Exportar progreso</button>
+    <button onclick="importar()">Importar progreso</button>
+  </div>
+
+  <hr>
+
+  <strong>Prácticas</strong><br>
+  <label><input type="checkbox" onchange="togglePractica(1)"> Práctica I</label>
+  <label><input type="checkbox" onchange="togglePractica(2)"> Práctica II</label>
+  <label><input type="checkbox" onchange="togglePractica(3)"> Práctica III</label>
+  <label><input type="checkbox" onchange="togglePractica(4)"> Práctica IV</label>
+</div>
 
 <div class="malla" id="malla"></div>
 
 <script>
-const cursos = [
-  // ===== PRIMER AÑO =====
-  {id:"calculo1", nombre:"Cálculo I", sem:1, req:[]},
-  {id:"algebra", nombre:"Álgebra y Geometría", sem:1, req:[]},
-  {id:"quimica", nombre:"Química General", sem:1, req:[]},
-  {id:"prog1", nombre:"Programación I", sem:1, req:[]},
-  {id:"intro_hidro", nombre:"Introducción a la Hidrología", sem:1, req:[]},
-  {id:"ingles1", nombre:"Inglés I", sem:1, req:[]},
+const TOTAL=300;
 
-  {id:"calculo2", nombre:"Cálculo II", sem:2, req:["calculo1"]},
-  {id:"algebra_lineal", nombre:"Álgebra Lineal", sem:2, req:["algebra"]},
-  {id:"geologia", nombre:"Geología y Geomorfología", sem:2, req:[]},
-  {id:"fisica", nombre:"Física General", sem:2, req:["calculo1"]},
-  {id:"socio_general", nombre:"Sociología General", sem:2, req:[]},
-  {id:"ingles2", nombre:"Inglés II", sem:2, req:["ingles1"]},
-
-  // ===== SEGUNDO AÑO =====
-  {id:"calculo3", nombre:"Cálculo III", sem:3, req:["calculo2"]},
-  {id:"ed", nombre:"Ecuaciones Diferenciales", sem:3, req:["algebra_lineal","calculo2"]},
-  {id:"eco_general", nombre:"Ecología General", sem:3, req:["quimica"]},
-  {id:"termo", nombre:"Termodinámica", sem:3, req:["fisica","quimica"]},
-  {id:"socio_rural", nombre:"Sociología Rural", sem:3, req:["socio_general"]},
-  {id:"ingles3", nombre:"Inglés III", sem:3, req:["ingles2"]},
-
-  {id:"mf", nombre:"Mecánica de Fluidos e Hidráulica Fluvial", sem:4, req:["ed","fisica"]},
-  {id:"prob", nombre:"Probabilidades y Estadística", sem:4, req:["calculo2","algebra_lineal"]},
-  {id:"clima", nombre:"Climatología", sem:4, req:["termo"]},
-  {id:"prog2", nombre:"Programación II", sem:4, req:["prog1"]},
-  {id:"agua_soc", nombre:"Agua y Sociedad", sem:4, req:["socio_rural"]},
-  {id:"ingles4", nombre:"Inglés IV", sem:4, req:["ingles3"]},
-
-  // ===== TERCER AÑO =====
-  {id:"micro", nombre:"Micro y Macroeconomía", sem:5, req:["calculo3"]},
-  {id:"estad_ap", nombre:"Estadística Aplicada", sem:5, req:["prob","calculo3"]},
-  {id:"suelo", nombre:"Ciencias del Suelo", sem:5, req:["quimica","geologia"]},
-  {id:"isva", nombre:"Interacción Suelo–Vegetación–Atmósfera", sem:5, req:["clima"]},
-  {id:"cc", nombre:"Componentes de Cambio Climático", sem:5, req:["socio_rural"]},
-
-  {id:"finanzas", nombre:"Finanzas y Administración", sem:6, req:["micro"]},
-  {id:"opt", nombre:"Optimización del Uso de RRHH", sem:6, req:["calculo3","ed"]},
-  {id:"calidad", nombre:"Calidad del Agua", sem:6, req:["mf","quimica"]},
-  {id:"geomatica", nombre:"Geomática y Análisis Espacial", sem:6, req:["prog2","algebra_lineal"]},
-  {id:"hidro_sup", nombre:"Hidrología Superficial", sem:6, req:["estad_ap","mf"]},
-
-  // ===== CUARTO AÑO =====
-  {id:"herr", nombre:"Herramientas de Análisis Económico y Social", sem:7, req:["agua_soc","finanzas"]},
-  {id:"eco_acu", nombre:"Ecología de Sistemas Acuáticos", sem:7, req:["eco_general"]},
-  {id:"hidro_sub", nombre:"Hidrología Subterránea", sem:7, req:["suelo","hidro_sup"]},
-  {id:"erosion", nombre:"Control de Procesos Erosivos", sem:7, req:["hidro_sup"]},
-  {id:"conflicto", nombre:"Conflicto y Desarrollo Comunitario", sem:7, req:["agua_soc"]},
-
-  {id:"eval_proj", nombre:"Evaluación de Proyectos", sem:8, req:["finanzas"]},
-  {id:"eia", nombre:"Evaluación de Impacto Ambiental", sem:8, req:["eco_acu"]},
-  {id:"modelacion", nombre:"Modelación Hidrológica", sem:8, req:["estad_ap"]},
-  {id:"rest", nombre:"Restauración Hidrológica de Cuencas", sem:8, req:["erosion"]},
-  {id:"valor", nombre:"Valoración de Servicios Ecosistémicos", sem:8, req:["herr","agua_soc"]},
-
-  // ===== QUINTO AÑO =====
-  {id:"politica", nombre:"Política y Legislación del Agua", sem:9, req:["agua_soc"]},
-  {id:"socio_hidro", nombre:"Estudios Socio-Hidrológicos", sem:9, req:["herr","valor"]},
-  {id:"girh", nombre:"Gestión Integrada de RRHH", sem:9, req:["conflicto","modelacion","opt"]},
-  {id:"taller", nombre:"Taller de Memoria de Título", sem:9, req:["practica4"]},
-
-  {id:"memoria", nombre:"Memoria de Título", sem:10, req:["taller"]},
+const cursos=[
+{id:"calculo1",n:"Cálculo I",c:6,a:1,s:1,r:[]},
+{id:"calculo2",n:"Cálculo II",c:6,a:1,s:2,r:["calculo1"]},
+{id:"calculo3",n:"Cálculo III",c:6,a:2,s:1,r:["calculo2"]},
+{id:"mf",n:"Mecánica de Fluidos",c:6,a:2,s:2,r:["calculo3"]},
+{id:"hidro_sup",n:"Hidrología Superficial",c:6,a:3,s:1,r:["mf"]},
+{id:"hidro_sub",n:"Hidrología Subterránea",c:6,a:4,s:1,r:["hidro_sup"]},
+{id:"taller",n:"Taller de Memoria",c:6,a:5,s:1,r:["practica4"]},
+{id:"memoria",n:"Memoria de Título",c:30,a:5,s:2,r:["taller"]}
 ];
 
-// ===== LÓGICA =====
-const estado = JSON.parse(localStorage.getItem("estadoMalla")) || {};
+let estado=JSON.parse(localStorage.getItem("estado"))||{};
+let plan={};
+let practicas=JSON.parse(localStorage.getItem("practicas"))||{};
+let modoPlan=false;
 
-function render() {
-  const cont = document.getElementById("malla");
-  cont.innerHTML = "";
+function creditos(){
+  return cursos.reduce((t,c)=>estado[c.id]?t+c.c:t,0);
+}
 
-  for (let s = 1; s <= 10; s++) {
-    const col = document.createElement("div");
-    col.className = "semestre";
-    col.innerHTML = `<h2>Semestre ${s}</h2>`;
+function togglePractica(n){
+  practicas["practica"+n]=!practicas["practica"+n];
+  if(n===4 && practicas.practica4) estado.taller=true;
+  localStorage.setItem("practicas",JSON.stringify(practicas));
+  guardar();
+}
 
-    cursos.filter(c => c.sem === s).forEach(c => {
-      const div = document.createElement("div");
-      div.className = "curso";
-      div.textContent = c.nombre;
+function guardar(){
+  localStorage.setItem("estado",JSON.stringify(estado));
+  render();
+}
 
-      const aprobados = c.req.every(r => estado[r]);
+function marcarSemestre(a,s){
+  cursos.filter(c=>c.a===a&&c.s===s).forEach(c=>{
+    if(modoPlan) plan[c.id]=true;
+    else estado[c.id]=true;
+  });
+  guardar();
+}
 
-      if (estado[c.id]) div.classList.add("aprobado");
-      else if (!aprobados) {
-        div.classList.add("bloqueado");
-        div.dataset.tooltip = "Falta aprobar:\n" + c.req.filter(r => !estado[r]).join(", ");
-      }
+function render(){
+  document.getElementById("creditos").textContent=
+    `Créditos aprobados: ${creditos()} / ${TOTAL}`;
+  document.getElementById("prog").style.width=
+    (creditos()/TOTAL*100)+"%";
 
-      div.onclick = () => {
-        if (!div.classList.contains("bloqueado")) {
-          estado[c.id] = !estado[c.id];
-          localStorage.setItem("estadoMalla", JSON.stringify(estado));
-          render();
+  const cont=document.getElementById("malla");
+  cont.innerHTML="";
+
+  for(let a=1;a<=5;a++){
+    const anio=document.createElement("div");
+    anio.className="anio";
+    anio.innerHTML=`<h2>Año ${a}</h2>`;
+
+    [1,2].forEach(s=>{
+      const sem=document.createElement("div");
+      sem.className="sem";
+      sem.innerHTML=`<h3 onclick="marcarSemestre(${a},${s})">Semestre ${s}</h3>`;
+
+      cursos.filter(c=>c.a===a&&c.s===s).forEach(c=>{
+        const d=document.createElement("div");
+        d.className="curso";
+        d.textContent=c.n;
+
+        let faltan=[];
+        c.r.forEach(r=>{if(!estado[r]&&!plan[r])faltan.push(r)});
+        if(estado[c.id]) d.classList.add("aprobado");
+        else if(modoPlan&&plan[c.id]) d.classList.add("plan");
+        else if(faltan.length){
+          d.classList.add("bloqueado");
+          d.dataset.tooltip="Falta aprobar:\n- "+faltan.join("\n- ");
         }
-      };
 
-      col.appendChild(div);
+        d.onclick=()=>{
+          if(d.classList.contains("bloqueado"))return;
+          if(modoPlan) plan[c.id]=!plan[c.id];
+          else estado[c.id]=!estado[c.id];
+          guardar();
+        };
+        sem.appendChild(d);
+      });
+
+      anio.appendChild(sem);
     });
 
-    cont.appendChild(col);
+    cont.appendChild(anio);
   }
+}
+
+document.getElementById("modoPlan").onchange=e=>{
+  modoPlan=e.target.checked;
+  plan={};
+  render();
+};
+
+document.getElementById("modoOscuro").onchange=e=>{
+  document.body.classList.toggle("dark",e.target.checked);
+};
+
+function exportar(){
+  const data=JSON.stringify({estado,practicas});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([data]));
+  a.download="malla.json";
+  a.click();
+}
+
+function importar(){
+  const i=document.createElement("input");
+  i.type="file";
+  i.onchange=e=>{
+    const r=new FileReader();
+    r.onload=()=>{
+      const d=JSON.parse(r.result);
+      estado=d.estado||{};
+      practicas=d.practicas||{};
+      guardar();
+    };
+    r.readAsText(e.target.files[0]);
+  };
+  i.click();
 }
 
 render();
 </script>
-
 </body>
 </html>
