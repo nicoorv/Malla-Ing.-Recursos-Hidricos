@@ -207,13 +207,68 @@ body.dark .intro-box{
   <label><input type="checkbox" onchange="togglePractica(2)"> Práctica II</label>
   <label><input type="checkbox" onchange="togglePractica(3)"> Práctica III</label>
   <label><input type="checkbox" onchange="togglePractica(4)"> Práctica IV</label>
+
+  <hr>
+
+<strong>Extras</strong><br>
+
+<label>
+  <input type="checkbox" onchange="toggleExtra('cfg1')"> CFG I (2 créditos)
+</label>
+<label>
+  <input type="checkbox" onchange="toggleExtra('cfg2')"> CFG II (2 créditos)
+</label>
+<label>
+  <input type="checkbox" onchange="toggleExtra('cfg3')"> CFG III (2 créditos)
+</label>
+
+<br><br>
+
+<label>
+  <input type="checkbox" onchange="toggleExtra('esp1')"> Electivo Especializado I (3 créditos)
+</label>
+<label>
+  <input type="checkbox" onchange="toggleExtra('esp2')"> Electivo Especializado II (3 créditos)
+</label>
+<label>
+  <input type="checkbox" onchange="toggleExtra('esp3')"> Electivo Especializado III (3 créditos)
+</label>
+
+<br><br>
+
+<label>
+  <input type="checkbox" onchange="toggleExtra('comp1')"> Electivo Complementario I (1 crédito)
+</label>
+<label>
+  <input type="checkbox" onchange="toggleExtra('comp2')"> Electivo Complementario II (1 crédito)
+</label>
+
 </div>
 
 <div class="malla" id="malla"></div>
 
 <script>
 const TOTAL=300;
+  
+const CREDITOS_PRACTICAS = {
+  practica1: 4,
+  practica2: 4,
+  practica3: 4,
+  practica4: 8
+};
 
+const CREDITOS_EXTRAS = {
+  cfg1: 2,
+  cfg2: 2,
+  cfg3: 2,
+  esp1: 3,
+  esp2: 3,
+  esp3: 3,
+  comp1: 1,
+  comp2: 1
+};
+
+  
 const cursos=[
   {id:"calculo1",n:"Cálculo I",c:6,sem:1,r:[]},
   {id:"algebra_geom",n:"Álgebra y Geometría",c:6,sem:1,r:[]},
@@ -275,22 +330,44 @@ const cursos=[
   {id:"memoria",n:"Memoria de Título",c:30,sem:10,r:["taller"]}
 ];
 
-let estado=JSON.parse(localStorage.getItem("estado"))||{};
-let plan={};
-let practicas=JSON.parse(localStorage.getItem("practicas"))||{};
-let modoPlan=false;
+let estado = JSON.parse(localStorage.getItem("estado")) || {};
+let plan = {};
+let practicas = JSON.parse(localStorage.getItem("practicas")) || {};
+let extras = JSON.parse(localStorage.getItem("extras")) || {};
+let modoPlan = false;
 
 function creditos(){
-  return cursos.reduce((t,c)=>estado[c.id]?t+c.c:t,0);
+  let total = cursos.reduce(
+    (t, c) => estado[c.id] ? t + c.c : t, 0
+  );
+
+  // prácticas
+  for(const p in CREDITOS_PRACTICAS){
+    if(practicas[p]) total += CREDITOS_PRACTICAS[p];
+  }
+
+  // extras
+  for(const e in CREDITOS_EXTRAS){
+    if(extras[e]) total += CREDITOS_EXTRAS[e];
+  }
+
+  return total;
 }
+
 
 function togglePractica(n){
-  practicas["practica"+n]=!practicas["practica"+n];
-  if(n===4 && practicas.practica4) estado.taller=true;
-  localStorage.setItem("practicas",JSON.stringify(practicas));
-  guardar();
+  practicas["practica"+n] = !practicas["practica"+n];
+  if(n===4 && practicas.practica4) estado.taller = true;
+  localStorage.setItem("practicas", JSON.stringify(practicas));
+  render();
 }
 
+function toggleExtra(id){
+  extras[id] = !extras[id];
+  localStorage.setItem("extras", JSON.stringify(extras));
+  render();
+}
+  
 function guardar(){
   localStorage.setItem("estado",JSON.stringify(estado));
   render();
@@ -305,20 +382,71 @@ function marcarSemestre(s){
 }
 
 function render(){
-  document.getElementById("creditos").textContent=
+  document.getElementById("creditos").textContent =
     `Créditos aprobados: ${creditos()} / ${TOTAL}`;
-  document.getElementById("prog").style.width=
-    (creditos()/TOTAL*100)+"%";
+  document.getElementById("prog").style.width =
+    (creditos()/TOTAL*100) + "%";
 
-  const cont=document.getElementById("malla");
-  cont.innerHTML="";
+  const cont = document.getElementById("malla");
+  cont.innerHTML = "";
 
-  for(let a=1;a<=5;a++){
-    const h=document.createElement("div");
-    h.className="anio";
-    h.textContent=`Año ${a}`;
+  // AÑOS
+  for(let a=1; a<=5; a++){
+    const h = document.createElement("div");
+    h.className = "anio";
+    h.textContent = `Año ${a}`;
     cont.appendChild(h);
   }
+
+  // SEMESTRES
+  for(let s=1; s<=10; s++){
+    const col = document.createElement("div");
+    col.className = "sem";
+    col.innerHTML = `<h3 onclick="marcarSemestre(${s})">Semestre ${s}</h3>`;
+
+    cursos.filter(c=>c.sem===s).forEach(c=>{
+      const d = document.createElement("div");
+      d.className = "curso";
+      d.textContent = c.n;
+
+      let faltan = c.r.filter(r=>!estado[r] && !plan[r]);
+      if(estado[c.id]) d.classList.add("aprobado");
+      else if(modoPlan && plan[c.id]) d.classList.add("plan");
+      else if(faltan.length){
+        d.classList.add("bloqueado");
+        d.dataset.tooltip =
+          "Falta aprobar:\n- " +
+          faltan.map(x=>cursos.find(y=>y.id===x).n).join("\n- ");
+      }
+
+      d.onclick = ()=>{
+        if(d.classList.contains("bloqueado")) return;
+        if(modoPlan) plan[c.id] = !plan[c.id];
+        else estado[c.id] = !estado[c.id];
+        guardar();
+      };
+
+      col.appendChild(d);
+    });
+
+    cont.appendChild(col);
+  }
+
+  // 🔹 SINCRONIZACIÓN (VA AQUÍ, FUERA DE LOS FOR)
+  for(let i=1;i<=4;i++){
+    const cb = document.querySelector(
+      `input[onchange="togglePractica(${i})"]`
+    );
+    if(cb) cb.checked = !!practicas["practica"+i];
+  }
+
+  Object.keys(CREDITOS_EXTRAS).forEach(id=>{
+    const cb = document.querySelector(
+      `input[onchange="toggleExtra('${id}')"]`
+    );
+    if(cb) cb.checked = !!extras[id];
+  });
+}
 
   for(let s=1;s<=10;s++){
     const col=document.createElement("div");
@@ -361,27 +489,6 @@ document.getElementById("modoOscuro").onchange=e=>{
   document.body.classList.toggle("dark",e.target.checked);
 };
 
-function exportar(){
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([JSON.stringify({estado,practicas})]));
-  a.download="malla.json";
-  a.click();
-}
-function importar(){
-  const i=document.createElement("input");
-  i.type="file";
-  i.onchange=e=>{
-    const r=new FileReader();
-    r.onload=()=>{
-      const d=JSON.parse(r.result);
-      estado=d.estado||{};
-      practicas=d.practicas||{};
-      guardar();
-    };
-    r.readAsText(e.target.files[0]);
-  };
-  i.click();
-}
 render();
 </script>
 </body>
