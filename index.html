@@ -174,7 +174,7 @@ body.dark .intro-box{
 <body>
 
   <!-- Pantalla de bienvenida -->
-<div id="intro">
+<div id="intro" onclick="this.style.display='none'">
   <div class="intro-box">
     <img src="spheal.png" alt="Spheal">
     <h2>Bienvenido a tu malla interactiva</h2>
@@ -383,18 +383,6 @@ function importar(){
   i.click();
 }
 render();
-
-  </script>
-  <script>
-  const intro = document.getElementById("intro");
-
-  // Siempre se muestra al cargar
-  intro.style.display = "flex";
-
-  // Se oculta al hacer click
-  intro.addEventListener("click", () => {
-    intro.style.display = "none";
-  });
 </script>
 </body>
 </html>
