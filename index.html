@@ -371,16 +371,27 @@ function guardar(){
 }
 
 function marcarSemestre(s){
-  cursos.filter(c=>c.sem===s).forEach(c=>{
-    if(modoPlan) plan[c.id]=true;
-    else estado[c.id]=true;
+  const delSem = cursos.filter(c => c.sem === s);
+
+  const todosAprobados = delSem.every(c => estado[c.id]);
+
+  delSem.forEach(c => {
+    if (modoPlan) {
+      plan[c.id] = !todosAprobados;
+    } else {
+      estado[c.id] = !todosAprobados;
+    }
   });
+
   guardar();
 }
 
+
 function render(){
-  document.getElementById("creditos").textContent =
-    `Créditos aprobados: ${creditos()} / ${TOTAL}`;
+const pct = Math.min(100, Math.round(creditos() / TOTAL * 100));
+
+document.getElementById("creditos").textContent =
+  `Créditos aprobados: ${creditos()} / ${TOTAL} (${pct}%)`;
   document.getElementById("prog").style.width =
     (creditos()/TOTAL*100) + "%";
 
