@@ -323,7 +323,7 @@ const cursos=[
   {id:"politica",n:"Política y Legislación del Agua",c:6,sem:9,r:["agua_soc"]},
   {id:"socio_hidro",n:"Estudios Socio-Hidrológicos",c:6,sem:9,r:["herr","valor"]},
   {id:"girh",n:"Gestión Integrada de Recursos Hídricos",c:6,sem:9,r:["conflicto","modelacion","opt"]},
-  {id:"taller",n:"Taller de Memoria de Título",c:6,sem:9,r:["practica4"]},
+  {id:"taller", n:"Taller de Memoria de Título", c:6, sem:9, r:[]}
 
   {id:"memoria",n:"Memoria de Título",c:30,sem:10,r:["taller"]}
 ];
@@ -355,7 +355,6 @@ function creditos(){
 
 function togglePractica(n){
   practicas["practica"+n] = !practicas["practica"+n];
-  if(n===4 && practicas.practica4) estado.taller = true;
   localStorage.setItem("practicas", JSON.stringify(practicas));
   render();
 }
@@ -408,6 +407,9 @@ function render(){
       d.textContent = c.n;
 
       let faltan = c.r.filter(r=>!estado[r] && !plan[r]);
+      if (c.id === "taller" && !practicas.practica4) {
+  faltan = ["practica4"];
+}
       if(estado[c.id]) d.classList.add("aprobado");
       else if(modoPlan && plan[c.id]) d.classList.add("plan");
       else if(faltan.length){
