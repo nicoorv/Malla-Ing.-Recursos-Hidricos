@@ -411,14 +411,20 @@ function render(){
   faltan = ["practica4"];
 }
       if(estado[c.id]) d.classList.add("aprobado");
-      else if(modoPlan && plan[c.id]) d.classList.add("plan");
-      else if(faltan.length){
-        d.classList.add("bloqueado");
-        d.dataset.tooltip =
-          "Falta aprobar:\n- " +
-          faltan.map(x=>cursos.find(y=>y.id===x).n).join("\n- ");
-      }
+     else if (faltan.length) {
+  d.classList.add("bloqueado");
 
+  const nombres = faltan.map(x => {
+    if (x.startsWith("practica")) {
+      return "Práctica IV";
+    }
+    const curso = cursos.find(y => y.id === x);
+    return curso ? curso.n : x;
+  });
+
+  d.dataset.tooltip =
+    "Falta aprobar:\n- " + nombres.join("\n- ");
+}
       d.onclick = ()=>{
         if(d.classList.contains("bloqueado")) return;
         if(modoPlan) plan[c.id] = !plan[c.id];
