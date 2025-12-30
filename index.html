@@ -448,25 +448,6 @@ function render(){
   });
 }
 
-  for(let s=1;s<=10;s++){
-    const col=document.createElement("div");
-    col.className="sem";
-    col.innerHTML=`<h3 onclick="marcarSemestre(${s})">Semestre ${s}</h3>`;
-
-    cursos.filter(c=>c.sem===s).forEach(c=>{
-      const d=document.createElement("div");
-      d.className="curso";
-      d.textContent=c.n;
-
-      let faltan=c.r.filter(r=>!estado[r]&&!plan[r]);
-      if(estado[c.id]) d.classList.add("aprobado");
-      else if(modoPlan&&plan[c.id]) d.classList.add("plan");
-      else if(faltan.length){
-        d.classList.add("bloqueado");
-        d.dataset.tooltip="Falta aprobar:\n- "+faltan.map(
-          x=>cursos.find(y=>y.id===x).n).join("\n- ");
-      }
-
       d.onclick=()=>{
         if(d.classList.contains("bloqueado"))return;
         if(modoPlan) plan[c.id]=!plan[c.id];
