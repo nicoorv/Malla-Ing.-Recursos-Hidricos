@@ -382,20 +382,19 @@ function importar(){
   };
   i.click();
 }
-
-// Pantalla de bienvenida (solo una vez)
-const intro = document.getElementById("intro");
-
-if(localStorage.getItem("introVisto")){
-  intro.style.display = "none";
-}
-
-intro.onclick = () => {
-  localStorage.setItem("introVisto", "true");
-  intro.style.display = "none";
-};
-  
 render();
+  
+  <script>
+  const intro = document.getElementById("intro");
+
+  // Siempre se muestra al cargar
+  intro.style.display = "flex";
+
+  // Se oculta al hacer click
+  intro.addEventListener("click", () => {
+    intro.style.display = "none";
+  });
 </script>
+  
 </body>
 </html>
