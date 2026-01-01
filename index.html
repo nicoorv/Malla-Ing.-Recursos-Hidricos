@@ -417,7 +417,10 @@ document.getElementById("creditos").textContent =
       d.className = "curso";
       d.textContent = c.n;
 
-      let faltan = c.r.filter(r => !estado[r]);
+      let faltan = c.r.filter(r =>
+  !(estado[r] || (modoPlan && plan[r]))
+);
+
 
 if (c.id === "taller" && !practicas.practica4) {
   faltan = ["practica4"];
