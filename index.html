@@ -420,20 +420,12 @@ document.getElementById("creditos").textContent =
       let faltan = modoPlan
   ? c.r.filter(r => !estado[r])
   : c.r.filter(r => !estado[r] && !plan[r]);
-      if (c.id === "taller" && !practicas.practica4) {
+
+if (c.id === "taller" && !practicas.practica4) {
   faltan = ["practica4"];
 }
-      
-  if(d.classList.contains("bloqueado")) return;
 
-  if(modoPlan){
-    plan[c.id] = !plan[c.id];
-  } else {
-    estado[c.id] = !estado[c.id];
-  }
-
-  render();
-};
+/* ESTADO VISUAL */
 if (estado[c.id]) {
   d.classList.add("aprobado");
 
@@ -444,12 +436,28 @@ if (estado[c.id]) {
   d.classList.add("bloqueado");
 
   const nombres = faltan.map(x => {
-    if (x.startsWith("practica")) {
-      return "Práctica IV";
-    }
+    if (x.startsWith("practica")) return "Práctica IV";
     const curso = cursos.find(y => y.id === x);
     return curso ? curso.n : x;
   });
+
+  d.dataset.tooltip =
+    "Falta aprobar:\n- " + nombres.join("\n- ");
+}
+
+/* CLICK */
+d.onclick = () => {
+  if (d.classList.contains("bloqueado")) return;
+
+  if (modoPlan) {
+    plan[c.id] = !plan[c.id];
+  } else {
+    estado[c.id] = !estado[c.id];
+  }
+
+  render();
+};
+
 
   d.dataset.tooltip =
     "Falta aprobar:\n- " + nombres.join("\n- ");
