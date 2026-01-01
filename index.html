@@ -423,8 +423,24 @@ document.getElementById("creditos").textContent =
       if (c.id === "taller" && !practicas.practica4) {
   faltan = ["practica4"];
 }
-      if(estado[c.id]) d.classList.add("aprobado");
-     else if (faltan.length) {
+      
+  if(d.classList.contains("bloqueado")) return;
+
+  if(modoPlan){
+    plan[c.id] = !plan[c.id];
+  } else {
+    estado[c.id] = !estado[c.id];
+  }
+
+  render();
+};
+if (estado[c.id]) {
+  d.classList.add("aprobado");
+
+} else if (modoPlan && plan[c.id]) {
+  d.classList.add("plan");
+
+} else if (faltan.length) {
   d.classList.add("bloqueado");
 
   const nombres = faltan.map(x => {
@@ -438,17 +454,6 @@ document.getElementById("creditos").textContent =
   d.dataset.tooltip =
     "Falta aprobar:\n- " + nombres.join("\n- ");
 }
-     d.onclick = ()=>{
-  if(d.classList.contains("bloqueado")) return;
-
-  if(modoPlan){
-    plan[c.id] = !plan[c.id];
-  } else {
-    estado[c.id] = !estado[c.id];
-  }
-
-  render();
-};
 
       col.appendChild(d);
     });
