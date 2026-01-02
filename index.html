@@ -153,8 +153,10 @@ body.dark .intro-box{
 }
 
 .intro-box img{
-  width:190px;
-  margin-bottom:14px;
+  width:175px;
+  margin-bottom:10px;
+  filter: drop-shadow(0 8px 16px rgba(90,134,173,0.25));
+  animation: spheal-float 3.8s ease-in-out infinite;
 }
 
 .intro-box h2{
@@ -192,6 +194,18 @@ body.dark .intro-box{
 
 .intro-cta:hover{
   text-decoration:underline;
+}
+
+  @keyframes spheal-float{
+  0%{
+    transform: translateY(0);
+  }
+  50%{
+    transform: translateY(-4px);
+  }
+  100%{
+    transform: translateY(0);
+  }
 }
   
 </style>
