@@ -131,6 +131,12 @@ button{
   justify-content:center;
   z-index:9999;
   cursor:pointer;
+  transition: opacity 0.5s ease;
+}
+
+  #intro.oculto{
+  opacity:0;
+  pointer-events:none;
 }
 
 body.dark #intro{
@@ -213,14 +219,24 @@ body.dark .intro-box{
     transform: translateY(0);
   }
 }
+
+body.intro-activo{
+  overflow:hidden;
+}
+
+body.intro-activo > *:not(#intro){
+  filter: blur(10px);
+  transition: filter 0.5s ease;
+  pointer-events:none;
+}
   
 </style>
 </head>
 
-<body>
+<body class="intro-activo">
 
   <!-- Pantalla de bienvenida -->
-<div id="intro" onclick="this.style.display='none'">
+<div id="intro" onclick="cerrarIntro()">
   <div class="intro-box">
     <img src="spheal.png" alt="Spheal">
     <h2>¡Bienvenido a la malla interactiva de Recursos Hídricos!</h2>
@@ -230,7 +246,7 @@ body.dark .intro-box{
       el modo planificación que te permite simular ramos aprobados para visualizar 
       tu avance en el futuro, separandolo de tu estado real.
     </p>
-    <p><strong>Haz click para comenzar</strong></p>
+    <p class="intro-cta">Haz click para comenzar</p>
   </div>
 </div>
 
@@ -536,7 +552,16 @@ document.getElementById("modoPlan").onchange=e=>{
 document.getElementById("modoOscuro").onchange=e=>{
   document.body.classList.toggle("dark",e.target.checked);
 };
+function cerrarIntro(){
+  const intro = document.getElementById("intro");
 
+  intro.classList.add("oculto");
+  document.body.classList.remove("intro-activo");
+
+  setTimeout(()=>{
+    intro.style.display="none";
+  },500);
+}
 render();
 </script>
 </body>
